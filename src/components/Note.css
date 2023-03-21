@@ -1,0 +1,30 @@
+.AuthorName {
+  font-style: italic;
+}
+
+.NoteContent {
+  text-align: left;
+}
+
+.NoteDate {
+  padding-left: 2%;
+}
+
+.NoteDiv {
+  border-style: solid;
+  border-width: 1px;
+  padding: 2%;
+  margin: 2%;
+}
+
+.NoteHeader {
+  display: flex;
+  border-width: 1px;
+  text-align: left;
+}
+
+.NoteTitle {
+  font-weight: bolder;
+  padding-left: 2%;
+  padding-right: 2%;
+}

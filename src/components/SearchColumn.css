@@ -1,0 +1,13 @@
+.SearchColumnDiv {
+  border-color: grey;
+  border-style: solid;
+  border-width: 1px;
+  margin: 2%;
+  padding: 2%;
+  text-align: left;
+}
+
+.SearchColumnHeader {
+  display: flex;
+  flex-direction: row;
+}
