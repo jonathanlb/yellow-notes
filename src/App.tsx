@@ -1,4 +1,4 @@
-import { Search } from '@mui/icons-material';
+import { Search, Topic } from '@mui/icons-material';
 import { Box, Paper, TextField, Tooltip } from '@mui/material';
 import Debug from 'debug';
 import { useState } from 'react';
@@ -42,6 +42,15 @@ function App() {
     if (e.code === 'Enter') {
       const searchTerm = (e.target as any)?.value?.toString()?.trim();
       const a = noteState.addSpace(searchTerm);
+      // TODO: conduct search and add notes
+      setNoteAction(a);
+    }
+  }
+
+  const newSpace = (e: React.KeyboardEvent<HTMLDivElement>) => {
+    if (e.code === 'Enter') {
+      const title = (e.target as any)?.value?.toString()?.trim();
+      const a = noteState.addSpace(title);
       setNoteAction(a);
     }
   }
@@ -50,10 +59,6 @@ function App() {
     const { source, destination, draggableId } = result;
     debug('onDragEnd', source, destination, draggableId);
     if (!destination) {
-      return;
-    }
-
-    if (destination.index === source.index) {
       return;
     }
 
@@ -69,12 +74,21 @@ function App() {
   return (
     <Paper className='App'>
       <Box className='SearchDiv'>
-        <Tooltip title='New Search'>
-          <TextField className='NewSearchDiv'
-            label={<Search />}
-            id="eventFilterText"
-            onKeyUp={newSearch} />
-        </Tooltip>
+        <Box className='NewSearchInputDiv'>
+          <Tooltip title='New Search'>
+            <TextField className='NewSearchInput'
+              label={<Search />}
+              onKeyUp={newSearch} />
+          </Tooltip>
+        </Box>
+
+        <Box className='NewSearchInputDiv'>
+          <Tooltip title='New Space'>
+            <TextField className='NewSearchInput'
+              label={<Topic />}
+              onKeyUp={newSpace} />
+          </Tooltip>
+        </Box>
       </Box>
 
       <DragDropContext onDragEnd={onDragEnd}>

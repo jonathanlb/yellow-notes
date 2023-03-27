@@ -6,6 +6,11 @@
   color: #61dafb;
 }
 
+.NewSearchInputDiv {
+  margin-right: 2%;
+  margin-left: 2%;
+}
+
 .SearchDiv {
   display: flex;
   padding: 2%;

@@ -1,11 +1,11 @@
+import { Close } from "@mui/icons-material";
 import { Box, Typography } from "@mui/material";
+import Debug from 'debug';
 import { Droppable, DroppableProvided } from "react-beautiful-dnd";
 import { Note } from "../model/notes";
 import { SearchColumn } from "../model/searchWorkspace";
 import { newNoteProps, NoteDiv } from "./Note";
 import './SearchColumn.css';
-import Debug from 'debug';
-import { Close } from "@mui/icons-material";
 
 const debug = Debug('yellow-SearchColumn');
 
@@ -37,6 +37,8 @@ export function SearchColumnDiv(props: SearchColumnProps) {
   debug('render', props);
 
   const createNoteProps = (note: Note, colIdx: number, noteIdx: number) => {
+    debug('creating-note-from', props);
+    debug('build-note', note, colIdx, noteIdx);
     return newNoteProps(
       note, noteIdx,
       () => props.closeNote(noteIdx));

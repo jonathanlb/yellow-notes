@@ -1,4 +1,7 @@
+import Debug from 'debug';
 import { Author, Note } from './notes';
+
+const debug = Debug('yellow-searchworkspace');
 
 export type SearchColumn = {
   notes: Map<string, Note>;
@@ -59,12 +62,19 @@ export class SearchWorkSpaceModel {
   reorderNote(
     srcSpace: number, srcIndex: number,
     destSpace: number, destIdx: number) {
+    debug('reorder', srcSpace, srcIndex, destSpace, destIdx);
     const srcCol = this.columns[srcSpace];
     const destCol = this.columns[destSpace];
     const noteId = srcCol.notesOrder[srcIndex];
 
     srcCol.notesOrder = srcCol.notesOrder.filter(x => x !== noteId);
     destCol.notesOrder.splice(destIdx, 0, noteId);
+
+    if (srcCol !== destCol) {
+      const note = srcCol.notes.get(noteId) as Note;
+      srcCol.notes.delete(noteId);
+      destCol.notes.set(noteId, note);
+    }
     return this.actionId++;
   }
 };
