@@ -1,9 +1,12 @@
+import Debug from 'debug';
 import { Observable, Subject } from 'rxjs';
 import { Author, newAuthor, newNote } from '../model/notes';
 import { SearchColumn, SearchWorkSpaceModel } from '../model/searchWorkspace';
 
+const debug = Debug('yellow-controller');
+
 export interface ServerInterface {
-    login: (token: string) => void,
+    login: (username: string, password: string) => void,
     logout: () => void,
 
     addSpace: (spaceTitle: string) => number,
@@ -13,15 +16,18 @@ export interface ServerInterface {
         spaceDstId: number, noteDstId: number) => void,
 
     getSpaces: () => Observable<Array<SearchColumn>>,
+    getLoggedIn: () => Observable<Boolean>,
 }
 
 export class DemoServerInterface implements ServerInterface {
     noteState: SearchWorkSpaceModel;
     columnsSub: Subject<Array<SearchColumn>>;
+    loggedInSub: Subject<boolean>;
 
     constructor() {
         this.noteState = new SearchWorkSpaceModel();
         this.columnsSub = new Subject<Array<SearchColumn>>();
+        this.loggedInSub = new Subject<boolean>();
 
         // populate with demo data
         this.noteState.addAuthor(newAuthor({ id: '1', name: 'Jonathan' }));
@@ -46,44 +52,50 @@ export class DemoServerInterface implements ServerInterface {
             0);
 
         this.updateSubscribers();
+        this.loggedInSub.next(true);
     }
 
-    addSpace(spaceTitle: string): number {
+    addSpace = (spaceTitle: string): number => {
         const spaceIdx = this.noteState.addSpace(spaceTitle);
         this.updateSubscribers();
         return spaceIdx;
     }
 
-    deleteNote(spaceIndex: number, noteIndex: number) {
+    deleteNote = (spaceIndex: number, noteIndex: number) => {
         this.noteState.deleteNote(spaceIndex, noteIndex);
         this.updateSubscribers();
     }
 
-    deleteSpace(spaceIndex: number) {
+    deleteSpace = (spaceIndex: number) => {
         this.noteState.deleteSpace(spaceIndex);
         this.updateSubscribers();
     }
 
-    reorderNote(spaceSrcId: number, noteSrcId: number,
-        spaceDstId: number, noteDstId: number) {
+    reorderNote = (spaceSrcId: number, noteSrcId: number,
+        spaceDstId: number, noteDstId: number) => {
         this.noteState.reorderNote(spaceSrcId, noteSrcId, spaceDstId, noteDstId);
         this.updateSubscribers();
     }
 
-    getSpaces() {
+    getSpaces = () => {
         return this.columnsSub;
     }
 
-    updateSubscribers() {
+    getLoggedIn = () => {
+        return this.loggedInSub;
+    }
+
+    updateSubscribers = () => {
         this.columnsSub.next(this.noteState.columns.slice());
     }
 
-    login(token: string) {
-
+    login = (username: string, password: string) => { 
+        debug('login', username, password);
+        this.loggedInSub.next(true);
     }
 
-    logout() {
-
+    logout = () => { 
+        this.loggedInSub.next(false);
     }
 }
 

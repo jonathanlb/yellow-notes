@@ -8,6 +8,11 @@
 }
 
 .SearchColumnHeader {
+  align-items: center;
   display: flex;
   flex-direction: row;
+}
+
+.SearchColumnHeader > * {
+  margin: 0% 2%;
 }

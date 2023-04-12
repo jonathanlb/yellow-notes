@@ -10,19 +10,16 @@ export type SearchColumn = {
 };
 
 export class SearchWorkSpaceModel {
-  actionId: number;
   authors: Map<string, Author>;
   columns: Array<SearchColumn>;
 
   constructor() {
-    this.actionId = 0;
     this.authors = new Map();
     this.columns = [];
   }
 
   addAuthor(author: Author) {
     this.authors.set(author.id(), author);
-    return this.actionId++;
   }
 
   addNote(note: Note, spaceIdx: number) {
@@ -30,7 +27,7 @@ export class SearchWorkSpaceModel {
     const nid = note.id();
     col.notes.set(nid, note);
     col.notesOrder.push(nid);
-    return this.actionId++;
+    return col.notesOrder.length;
   }
 
   addSpace(title: string) {
@@ -39,7 +36,7 @@ export class SearchWorkSpaceModel {
       notesOrder: [],
       title: title,
     });
-    return this.actionId++;
+    return this.columns.length;
   }
 
   deleteNote(spaceIdx: number, noteIdx: number) {
@@ -47,12 +44,10 @@ export class SearchWorkSpaceModel {
     const noteId = col.notesOrder[noteIdx];
     col.notes.delete(noteId);
     col.notesOrder.splice(noteIdx, 1);
-    return this.actionId++;
   };
 
   deleteSpace(spaceIdx: number) {
     this.columns.splice(spaceIdx, 1);
-    return this.actionId++;
   }
 
   getAuthor(id: string) {
@@ -75,6 +70,5 @@ export class SearchWorkSpaceModel {
       srcCol.notes.delete(noteId);
       destCol.notes.set(noteId, note);
     }
-    return this.actionId++;
   }
 };

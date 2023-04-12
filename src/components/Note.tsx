@@ -1,4 +1,4 @@
-import { Box, Typography } from '@mui/material';
+import { Box, Tooltip, Typography } from '@mui/material';
 import { Draggable, DraggableProvided, DraggableStateSnapshot } from 'react-beautiful-dnd';
 import ReactMarkdown from 'react-markdown';
 import { Note } from '../model/notes';
@@ -54,7 +54,7 @@ export function NoteDiv(props: NoteProps) {
     window.getSelection()?.removeAllRanges();// to deselect
   }
   return (
-    <Draggable 
+    <Draggable
       draggableId={props.id()}
       index={props.index}
       key={props.index} >
@@ -70,19 +70,29 @@ export function NoteDiv(props: NoteProps) {
               : "none"
           }}>
           <Box className='NoteHeader'>
-            <Typography className='AuthorName'>
-              {props.author().name()}
-            </Typography>
-            <Typography className='NoteTitle'>
-              {props.title()}
-            </Typography>
-            <ContentCopy onClick={copyContent} />
-            <Typography className='NoteDate'>
-              {formatDate(props.creationS())}
-            </Typography>
-            <Close
-              sx={{marginRight: 0, marginLeft: 'auto'}}
-              onClick={props.close}/>
+            <Tooltip title='Author'>
+              <Typography className='AuthorName'>
+                {props.author().name()}
+              </Typography>
+            </Tooltip>
+            <Tooltip title='Title'>
+              <Typography className='NoteTitle'>
+                {props.title()}
+              </Typography>
+            </Tooltip>
+            <Tooltip title='Copy to clipboard'>
+              <ContentCopy onClick={copyContent} />
+            </Tooltip>
+            <Tooltip title='Creation date'>
+              <Typography className='NoteDate'>
+                {formatDate(props.creationS())}
+              </Typography>
+            </Tooltip>
+            <Tooltip title='Close note'>
+              <Close
+                sx={{ marginRight: 0, marginLeft: 'auto' }}
+                onClick={props.close} />
+            </Tooltip>
           </Box>
           <ReactMarkdown className='NoteContent'>
             {props.content()}

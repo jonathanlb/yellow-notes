@@ -1,5 +1,5 @@
-import { Close } from "@mui/icons-material";
-import { Box, Typography } from "@mui/material";
+import { Close, Create } from "@mui/icons-material";
+import { Box, Tooltip, Typography } from "@mui/material";
 import Debug from 'debug';
 import { Droppable, DroppableProvided } from "react-beautiful-dnd";
 import { Note } from "../model/notes";
@@ -50,9 +50,14 @@ export function SearchColumnDiv(props: SearchColumnProps) {
         <Box className='SearchColumnDiv' key={props.key}>
           <Box className='SearchColumnHeader'>
             <Typography>{props.title}</Typography>
-            <Close
-              sx={{marginRight: 0, marginLeft: 'auto'}}
-              onClick={props.closeSearchCol}/>
+            <Tooltip title='New note'>
+              <Create/>
+            </Tooltip>
+            <Tooltip title='Close space'>
+              <Close
+                sx={{marginRight: 0, marginLeft: 'auto'}}
+                onClick={props.closeSearchCol}/>
+            </Tooltip>
           </Box>
           <Box ref={droppableProvided.innerRef}
             {...droppableProvided.droppableProps}>

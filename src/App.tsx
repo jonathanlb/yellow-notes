@@ -4,6 +4,7 @@ import Debug from 'debug';
 import { useEffect, useState } from 'react';
 import { DragDropContext, DropResult, ResponderProvided } from 'react-beautiful-dnd';
 import './App.css';
+import { LoginDiv } from './components/Login';
 import { newSearchColumnProps, SearchColumnDiv } from './components/SearchColumn';
 import { DemoServerInterface } from './controller/ServerInterface';
 import { SearchColumn } from './model/searchWorkspace';
@@ -14,10 +15,15 @@ const noteController = new DemoServerInterface();
 
 function App() {
   const [columns, setColumns] = useState([] as Array<SearchColumn>);
+  const [loggedIn, setLoggedIn] = useState(false);
+
   useEffect(() => {
-    const sub = noteController.getSpaces().subscribe(setColumns);
+    const subs = [
+      noteController.getSpaces().subscribe(setColumns),
+      noteController.getLoggedIn().subscribe(setLoggedIn)
+    ];
     noteController.updateSubscribers(); // make sure to render data on mount
-    return () => sub.unsubscribe();
+    return () => subs.forEach(sub => sub.unsubscribe());
   }, []);
 
   const newSearch = (e: React.KeyboardEvent<HTMLDivElement>) => {
@@ -46,6 +52,12 @@ function App() {
     noteController.reorderNote(
       srcColId, source.index,
       destColId, destination.index);
+  }
+
+  if (!loggedIn) {
+    return (
+      <LoginDiv login={noteController.login}/>
+    );
   }
 
   return (
