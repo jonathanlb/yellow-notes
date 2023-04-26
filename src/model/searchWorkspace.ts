@@ -36,7 +36,6 @@ export class SearchWorkSpaceModel {
       notesOrder: [],
       title: title,
     });
-    return this.columns.length;
   }
 
   deleteNote(spaceIdx: number, noteIdx: number) {

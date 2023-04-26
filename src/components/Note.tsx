@@ -31,7 +31,7 @@ export function newNoteProps(
     content: note.content,
     creationS: note.creationS,
     id: note.id,
-    title: note.title,
+    score: note.score
   }
 }
 
@@ -75,11 +75,15 @@ export function NoteDiv(props: NoteProps) {
                 {props.author().name()}
               </Typography>
             </Tooltip>
-            <Tooltip title='Title'>
-              <Typography className='NoteTitle'>
-                {props.title()}
-              </Typography>
-            </Tooltip>
+
+            {props.score !== undefined &&
+              <Tooltip title='Score'>
+                <Typography className='NoteScore'>
+                  ({props.score})
+                </Typography>
+              </Tooltip>
+            }
+
             <Tooltip title='Copy to clipboard'>
               <ContentCopy onClick={copyContent} />
             </Tooltip>

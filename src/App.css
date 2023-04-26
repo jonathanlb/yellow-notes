@@ -6,6 +6,10 @@
   color: #61dafb;
 }
 
+.LogoutButton {
+  float: right;
+}
+
 .NewSearchInputDiv {
   margin-right: 2%;
   margin-left: 2%;
@@ -14,4 +18,5 @@
 .SearchDiv {
   display: flex;
   padding: 2%;
+  width: 100%;
 }

@@ -20,7 +20,7 @@ export type NoteData = {
   content: string;
   creationS: number;
   id: string;
-  title: string;
+  score?: number;
 };
 
 export interface Note {
@@ -28,7 +28,7 @@ export interface Note {
   content: () => string;
   creationS: () => number;
   id: () => string;
-  title: () => string;
+  score?: number;
 };
 
 export function newNote(note: NoteData): Note {
@@ -37,6 +37,6 @@ export function newNote(note: NoteData): Note {
     content: () => note.content,
     creationS: () => note.creationS,
     id: () => note.id,
-    title: () => note.title,
+    score: note.score,
   };
 }

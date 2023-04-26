@@ -1,5 +1,6 @@
 .AuthorName {
   font-style: italic;
+  padding-right: 2%;
 }
 
 .NoteContent {
@@ -23,8 +24,7 @@
   text-align: left;
 }
 
-.NoteTitle {
+.NoteScore {
   font-weight: bolder;
-  padding-left: 2%;
   padding-right: 2%;
 }

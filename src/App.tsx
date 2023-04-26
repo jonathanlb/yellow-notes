@@ -1,17 +1,23 @@
 import { Search, Topic } from '@mui/icons-material';
-import { Box, Paper, TextField, Tooltip } from '@mui/material';
+import Logout from '@mui/icons-material/Logout';
+import { Box, Button, Paper, TextField, Tooltip } from '@mui/material';
 import Debug from 'debug';
 import { useEffect, useState } from 'react';
 import { DragDropContext, DropResult, ResponderProvided } from 'react-beautiful-dnd';
 import './App.css';
 import { LoginDiv } from './components/Login';
-import { newSearchColumnProps, SearchColumnDiv } from './components/SearchColumn';
-import { DemoServerInterface } from './controller/ServerInterface';
+import { SearchColumnDiv, newSearchColumnProps } from './components/SearchColumn';
+import { DemoServerInterface } from './controller/DemoServerInterface';
+import { NetworkServerInterface } from './controller/NetworkServerInterface';
 import { SearchColumn } from './model/searchWorkspace';
 
 const debug = Debug('yellow-app');
 
-const noteController = new DemoServerInterface();
+const demo = false;
+
+const noteController = demo ?
+  new DemoServerInterface() :
+  new NetworkServerInterface();
 
 function App() {
   const [columns, setColumns] = useState([] as Array<SearchColumn>);
@@ -29,7 +35,8 @@ function App() {
   const newSearch = (e: React.KeyboardEvent<HTMLDivElement>) => {
     if (e.code === 'Enter') {
       const searchTerm = (e.target as any)?.value?.toString()?.trim();
-      noteController.addSpace(searchTerm); // TODO issue search
+      noteController.addSpace(searchTerm);
+      noteController.search(searchTerm, 0);
     }
   }
 
@@ -78,6 +85,13 @@ function App() {
               onKeyUp={newSpace} />
           </Tooltip>
         </Box>
+
+        <Tooltip title='Logout'>
+          <Button className='LogoutButton'
+            onClick={e=>noteController.logout()}>
+            <Logout/>
+          </Button>
+        </Tooltip>
       </Box>
 
       <DragDropContext onDragEnd={onDragEnd}>
