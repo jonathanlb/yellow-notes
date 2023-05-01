@@ -1,5 +1,5 @@
 import { Search, Topic } from '@mui/icons-material';
-import Logout from '@mui/icons-material/Logout';
+import { Create, Logout } from '@mui/icons-material';
 import { Box, Button, Paper, TextField, Tooltip } from '@mui/material';
 import Debug from 'debug';
 import { useEffect, useState } from 'react';
@@ -10,6 +10,7 @@ import { SearchColumnDiv, newSearchColumnProps } from './components/SearchColumn
 import { DemoServerInterface } from './controller/DemoServerInterface';
 import { NetworkServerInterface } from './controller/NetworkServerInterface';
 import { SearchColumn } from './model/searchWorkspace';
+import { EditNoteDiv } from './components/EditNote';
 
 const debug = Debug('yellow-app');
 
@@ -21,6 +22,7 @@ const noteController = demo ?
 
 function App() {
   const [columns, setColumns] = useState([] as Array<SearchColumn>);
+  const [isEditing, setIsEditing] = useState(false);
   const [loggedIn, setLoggedIn] = useState(false);
 
   useEffect(() => {
@@ -86,6 +88,13 @@ function App() {
           </Tooltip>
         </Box>
 
+        <Tooltip title='New Note'>
+          <Button
+            onClick={e=>setIsEditing(true)}>
+            <Create/>
+          </Button>
+        </Tooltip>
+
         <Tooltip title='Logout'>
           <Button className='LogoutButton'
             onClick={e=>noteController.logout()}>
@@ -93,6 +102,8 @@ function App() {
           </Button>
         </Tooltip>
       </Box>
+
+      { isEditing ? <EditNoteDiv cancel={()=>setIsEditing(false)}/> : undefined }
 
       <DragDropContext onDragEnd={onDragEnd}>
         {

@@ -43,16 +43,15 @@ export function NoteDiv(props: NoteProps) {
   const divId = 'SearchColumnDiv-' + (divIdCounter++);
 
   const copyContent = (e: React.MouseEvent<Element, MouseEvent>) => {
-    const range = document.createRange();
-    const el = document.getElementById(divId);
-    if (!el) {
-      return;
-    }
-    range.selectNode(el);
-    window.getSelection()?.addRange(range);
-    document.execCommand("copy");
-    window.getSelection()?.removeAllRanges();// to deselect
+    const div = document.getElementById(divId);
+    const el = div?.querySelector('.NoteContent');
+    debug('content', el);
+    debug('content html', el?.innerHTML);
+    const type = 'text/html';
+    const blob = new Blob([el?.innerHTML as string], { type });
+    navigator.clipboard.write([new ClipboardItem({ [type]: blob})]);
   }
+
   return (
     <Draggable
       draggableId={props.id()}
@@ -98,7 +97,7 @@ export function NoteDiv(props: NoteProps) {
                 onClick={props.close} />
             </Tooltip>
           </Box>
-          <ReactMarkdown className='NoteContent'>
+          <ReactMarkdown className='NoteContent' linkTarget='_blank'>
             {props.content()}
           </ReactMarkdown>
         </Box>

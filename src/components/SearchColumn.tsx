@@ -1,10 +1,10 @@
-import { Close, Create } from "@mui/icons-material";
-import { Box, Tooltip, Typography } from "@mui/material";
+import { Close } from '@mui/icons-material';
+import { Box, Tooltip, Typography } from '@mui/material';
 import Debug from 'debug';
-import { Droppable, DroppableProvided } from "react-beautiful-dnd";
-import { Note } from "../model/notes";
-import { SearchColumn } from "../model/searchWorkspace";
-import { newNoteProps, NoteDiv } from "./Note";
+import { Droppable, DroppableProvided } from 'react-beautiful-dnd';
+import { Note } from '../model/notes';
+import { SearchColumn } from '../model/searchWorkspace';
+import { newNoteProps, NoteDiv } from './Note';
 import './SearchColumn.css';
 
 const debug = Debug('yellow-SearchColumn');
@@ -50,9 +50,6 @@ export function SearchColumnDiv(props: SearchColumnProps) {
         <Box className='SearchColumnDiv' key={props.key}>
           <Box className='SearchColumnHeader'>
             <Typography>{props.title}</Typography>
-            <Tooltip title='New note'>
-              <Create/>
-            </Tooltip>
             <Tooltip title='Close space'>
               <Close
                 sx={{marginRight: 0, marginLeft: 'auto'}}
