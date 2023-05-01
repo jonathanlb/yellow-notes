@@ -1,14 +1,16 @@
 import { useState } from 'react';
-import { Close, ContentPaste } from '@mui/icons-material';
+import { Close, ContentPaste, Save } from '@mui/icons-material';
 import { Box, TextField, Tooltip, Typography } from '@mui/material';
 import './EditNote.css';
 import Debug from 'debug';
 import TurndownService from 'turndown';
+import { createErrorNote } from '../controller/NetworkServerInterface';
 
 const debug = Debug('yellow-Edit');
 
 export interface EditNoteProps {
     cancel: () => void,
+    save: (content: string) => Promise<Error|void>,
 };
 
 export function EditNoteDiv(props: EditNoteProps) {
@@ -21,11 +23,20 @@ export function EditNoteDiv(props: EditNoteProps) {
                 const blob = await item.getType('text/plain');
                 setContent(content + await blob.text());
             } else if (item.types.includes('text/html')) {
-                // TODO ? convert to MD with Turndown?
                 const tds = new TurndownService();
                 const blob = await item.getType('text/html');
                 setContent(content + tds.turndown(await blob.text()));
             }
+        }
+    }
+
+    const save = async () => {
+        const e = await props.save(content);
+        if (e) {
+            const errorNote = createErrorNote(e, 'Cannot Save:');
+            setContent(`${errorNote.content()}\n\n${content}`);
+        } else {
+            props.cancel();
         }
     }
 
@@ -38,6 +49,10 @@ export function EditNoteDiv(props: EditNoteProps) {
                 <Tooltip title='Paste from clipboard'>
                     <ContentPaste 
                         onClick={paste} />
+                </Tooltip>
+                <Tooltip title='Save'>
+                    <Save
+                        onClick={save} />
                 </Tooltip>
                 <Tooltip title='Close note'>
                     <Close

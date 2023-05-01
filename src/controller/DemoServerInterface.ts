@@ -64,6 +64,17 @@ export class DemoServerInterface implements ServerInterface {
         this.updateSubscribers();
     }
 
+    saveNote = async (content: string) => {
+        this.noteState.addNote(
+            newNote({
+                author: this.noteState.getAuthor('1') as Author,
+                content: content,
+                creationS: new Date().getTime(),
+                id: (this.dummyNoteId++).toString()
+            }),
+            0);
+    }
+
     search = (searchTerm: string, spaceIndex: number) => {
         this.noteState.addNote(
             newNote({

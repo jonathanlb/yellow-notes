@@ -10,7 +10,17 @@ type SearchScore = {
     Id: string,
     Score: number,
 }
+export function createErrorNote(e: any, title: string) {
+    const errorContent =
+        `# ${title}\n\n**Error:** \`${e.message}\``;
+    return newNote({
+        author: newAuthor({ id: '', name: 'Notes Server' }),
+        content: errorContent,
+        creationS: new Date().getTime() / 1000,
+        id: '-1', // assignment to '' causes rbdnd to freeze note...
+    });
 
+}
 export class NetworkServerInterface implements ServerInterface {
     noteState: SearchWorkSpaceModel;
     columnsSub: Subject<Array<SearchColumn>>;
@@ -21,6 +31,12 @@ export class NetworkServerInterface implements ServerInterface {
         this.noteState = new SearchWorkSpaceModel();
         this.columnsSub = new Subject<Array<SearchColumn>>();
         this.loggedInSub = new Subject<boolean>();
+    }
+
+    getHeaders = () => {
+        return {
+            Authorization: `Bearer ${this.token}`
+        };
     }
 
     login = async (username: string, password: string) => {
@@ -80,25 +96,34 @@ export class NetworkServerInterface implements ServerInterface {
         this.updateSubscribers();
     }
 
+    saveNote = async (content: string) => {
+        let result: Error | undefined = undefined;
+        debug('save', content);
+        let cmd = `http://localhost:3000/note/create`;
+        const headers = this.getHeaders();
+        const body = new URLSearchParams();
+        body.append('content', encodeURIComponent(content));
+
+        let resp = await fetch(cmd, { method: 'POST', headers, body })
+            .catch(e => { result = e; });
+        if (resp?.status === 200) {
+            return;
+        } else {
+            return result || new Error(`${resp?.status} ${resp?.statusText}`);
+        }
+    }
+
     search = async (searchTerm: string, spaceIndex: number) => {
         const displayError = (e: any) => {
             debug('search error', e);
-            const errorContent =
-                `# Search Error\n\n**Failed search:** \`${searchTerm}\`\n\n**Error:** \`${e.message}\``;
-            const errorNote = newNote({
-                author: newAuthor({ id: '', name: 'Notes Server' }),
-                content: errorContent,
-                creationS: new Date().getTime() / 1000,
-                id: '-1', // assignment to '' causes rbdnd to freeze note...
-            });
+            const errorNote = createErrorNote(
+                e, `Search Error\n\n**Failed search:** \`${searchTerm}\``);
             this.noteState.addNote(errorNote, spaceIndex);
         }
 
         debug('search', searchTerm);
         let cmd = `http://localhost:3000/note/search/${encodeURIComponent(searchTerm)}`;
-        const headers = {
-            Authorization: `Bearer ${this.token}`
-        };
+        const headers = this.getHeaders();
         let resp = await fetch(cmd, { headers })
             .catch(displayError);
 
@@ -110,19 +135,24 @@ export class NetworkServerInterface implements ServerInterface {
         } else {
             const body = await resp.json() as Array<SearchScore>;
             debug('results', body);
-            const notes = await Promise.all(
+            let notes = await Promise.all(
                 body.map(async ss => {
                     const cmd = `http://localhost:3000/note/get/${ss.Id}`;
                     const resp = await fetch(cmd, { headers })
                         .catch(displayError);
-                    if (resp) {
+                    if (resp?.status === 200) {
                         const obj: any = await resp.json();
                         obj.Id = ss.Id;
                         obj.Score = ss.Score.toFixed(2);
                         return obj;
+                    } else {
+                        displayError({
+                            message: `cannot find id=${ss.Id} status: ${resp?.status} (${resp?.statusText}) type: ${resp?.type || '?'}`
+                        });
                     }
                 }));
             debug('notes', notes);
+            notes = notes.filter(x => x !== undefined);
 
             await Promise.all( // wait for all note renders to complete to update
                 notes.map(async (obj: any) => {
@@ -146,7 +176,7 @@ export class NetworkServerInterface implements ServerInterface {
 
     loadAuthor = async (id: string) => {
         const cmd = `http://localhost:3000/user/get/${id}`;
-        const headers = { Authorization: `Bearer ${this.token}` };
+        const headers = this.getHeaders();
         debug('loadAuthor', cmd);
         const resp = await fetch(cmd, { headers });
         const author = await resp.json();

@@ -10,6 +10,7 @@ export interface ServerInterface {
     deleteSpace: (spaceIndex: number) => void,
     reorderNote: (spaceSrcId: number, noteSrcId: number,
         spaceDstId: number, noteDstId: number) => void,
+    saveNote: (content: string) => Promise<Error|void>,
     search: (searchTerm: string, spaceIndex: number) => void,
     getSpaces: () => Observable<Array<SearchColumn>>,
     getLoggedIn: () => Observable<Boolean>,

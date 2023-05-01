@@ -103,7 +103,13 @@ function App() {
         </Tooltip>
       </Box>
 
-      { isEditing ? <EditNoteDiv cancel={()=>setIsEditing(false)}/> : undefined }
+      { isEditing ?
+        <EditNoteDiv
+          cancel={()=>setIsEditing(false)}
+          save={noteController.saveNote}
+          /> :
+          undefined
+      }
 
       <DragDropContext onDragEnd={onDragEnd}>
         {
