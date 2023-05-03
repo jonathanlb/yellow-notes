@@ -1,7 +1,7 @@
 import Debug from 'debug';
 import { Subject } from 'rxjs';
 import { newAuthor, newNote } from '../model/notes';
-import { SearchColumn, SearchWorkSpaceModel } from '../model/searchWorkspace';
+import { orderNotesByDate, orderNotesByScore, SearchColumn, SearchWorkSpaceModel } from '../model/searchWorkspace';
 import { ServerInterface } from './ServerInterface';
 
 const debug = Debug('yellow-controller-network');
@@ -86,6 +86,16 @@ export class NetworkServerInterface implements ServerInterface {
 
     deleteSpace = (spaceIndex: number) => {
         this.noteState.deleteSpace(spaceIndex);
+        this.updateSubscribers();
+    }
+
+    orderNotesByDate = (spaceIndex: number) => {
+        orderNotesByDate(this.noteState.columns[spaceIndex]);
+        this.updateSubscribers();
+    }
+
+    orderNotesByScore = (spaceIndex: number) => {
+        orderNotesByScore(this.noteState.columns[spaceIndex]);
         this.updateSubscribers();
     }
 

@@ -8,6 +8,8 @@ export interface ServerInterface {
     addSpace: (spaceTitle: string) => void,
     deleteNote: (spaceIndex: number, noteIndex: number) => void,
     deleteSpace: (spaceIndex: number) => void,
+    orderNotesByDate: (spaceIndex: number) => void,
+    orderNotesByScore: (spaceIndex: number) => void,
     reorderNote: (spaceSrcId: number, noteSrcId: number,
         spaceDstId: number, noteDstId: number) => void,
     saveNote: (content: string) => Promise<Error|void>,

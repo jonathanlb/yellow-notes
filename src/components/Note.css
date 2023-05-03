@@ -5,6 +5,8 @@
 
 .NoteContent {
   text-align: left;
+  background-color: #ffff00;
+  padding: 2%;
 }
 
 .NoteDate {
@@ -12,16 +14,15 @@
 }
 
 .NoteDiv {
-  border-style: solid;
-  border-width: 1px;
-  padding: 2%;
-  margin: 2%;
+  padding: 1%;
 }
 
 .NoteHeader {
   display: flex;
   border-width: 1px;
   text-align: left;
+  background-color: #33ff00;
+  padding: 2%;
 }
 
 .NoteScore {

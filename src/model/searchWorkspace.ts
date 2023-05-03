@@ -9,6 +9,22 @@ export type SearchColumn = {
   title: string;
 };
 
+export function orderNotesByDate(sc: SearchColumn) {
+  const entries = Array.from(sc.notes.entries());
+  sc.notesOrder = entries.sort(
+    (a: [string, Note], b: [string, Note]) =>
+      b[1].creationS() - a[1].creationS())
+      .map(x => x[0]);
+}
+
+export function orderNotesByScore(sc: SearchColumn) {
+  const entries = Array.from(sc.notes.entries());
+  sc.notesOrder = entries.sort(
+    (a: [string, Note], b: [string, Note]) =>
+      (b[1].score || 0) - (a[1].score || 0))
+      .map(x => x[0]);
+}
+
 export class SearchWorkSpaceModel {
   authors: Map<string, Author>;
   columns: Array<SearchColumn>;

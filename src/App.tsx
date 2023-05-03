@@ -111,6 +111,7 @@ function App() {
           undefined
       }
 
+      <Box className="SearchPanesDiv">
       <DragDropContext onDragEnd={onDragEnd}>
         {
           columns.map((c, i) => {
@@ -119,11 +120,14 @@ function App() {
               newSearchColumnProps(
                 c, i,
                 () => noteController.deleteSpace(i),
-                (n) => noteController.deleteNote(i, n)
+                (n) => noteController.deleteNote(i, n),
+                () => noteController.orderNotesByDate(i),
+                () => noteController.orderNotesByScore(i),
               ));
           })
         }
       </DragDropContext>
+      </Box>
     </Paper>
   );
 }

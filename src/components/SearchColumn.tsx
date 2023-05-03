@@ -1,4 +1,4 @@
-import { Close } from '@mui/icons-material';
+import { Close, DateRange, Score } from '@mui/icons-material';
 import { Box, Tooltip, Typography } from '@mui/material';
 import Debug from 'debug';
 import { Droppable, DroppableProvided } from 'react-beautiful-dnd';
@@ -12,6 +12,8 @@ const debug = Debug('yellow-SearchColumn');
 export interface SearchColumnProps extends SearchColumn {
   closeNote: (noteIdx: number) => void;
   closeSearchCol: () => void;
+  sortByDate: () => void;
+  sortByScore: () => void;
   id: string;
   key: number;
 }
@@ -20,11 +22,15 @@ export function newSearchColumnProps(
   col: SearchColumn,
   index: number,
   closeSearchCol: () => void,
-  closeNote: (noteIdx: number) => void):
+  closeNote: (noteIdx: number) => void,
+  sortByDate: () => void,
+  sortByScore: () => void):
   SearchColumnProps {
   return {
     closeNote: closeNote,
     closeSearchCol: closeSearchCol,
+    sortByDate: sortByDate,
+    sortByScore: sortByScore,
     id: index.toString(),
     key: index,
     notes: col.notes,
@@ -50,6 +56,12 @@ export function SearchColumnDiv(props: SearchColumnProps) {
         <Box className='SearchColumnDiv' key={props.key}>
           <Box className='SearchColumnHeader'>
             <Typography>{props.title}</Typography>
+            <Tooltip title='Order by date'>
+              <DateRange onClick={props.sortByDate} />
+            </Tooltip>
+            <Tooltip title='Order by score'>
+              <Score onClick={props.sortByScore} />
+            </Tooltip>
             <Tooltip title='Close space'>
               <Close
                 sx={{marginRight: 0, marginLeft: 'auto'}}

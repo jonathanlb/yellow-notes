@@ -14,10 +14,21 @@
 .NewSearchInputDiv {
   margin-right: 2%;
   margin-left: 2%;
+  background-color: white;
+  border-radius: 5%;
 }
 
 .SearchDiv {
   display: flex;
   padding: 2%;
-  width: 100%;
+  width: 95%;
+  background-color: #aa00ff;
+  border-width: 0.5rem;
+  border-color: #7700b3;
+  border-style: solid;
+}
+
+.SearchPanesDiv {
+  display: flex;
+  flex-wrap: wrap;
 }
