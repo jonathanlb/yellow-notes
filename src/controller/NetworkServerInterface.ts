@@ -3,6 +3,7 @@ import { Subject } from 'rxjs';
 import { newAuthor, newNote } from '../model/notes';
 import { orderNotesByDate, orderNotesByScore, SearchColumn, SearchWorkSpaceModel } from '../model/searchWorkspace';
 import { ServerInterface } from './ServerInterface';
+import { config } from '../config';
 
 const debug = Debug('yellow-controller-network');
 
@@ -41,7 +42,7 @@ export class NetworkServerInterface implements ServerInterface {
 
     login = async (username: string, password: string) => {
         debug('login', username);
-        const cmd = 'http://localhost:3000/login';
+        const cmd = `${config.notesServer}/login`;
 
         const login = new URLSearchParams();
         login.append('user', username);
@@ -109,7 +110,8 @@ export class NetworkServerInterface implements ServerInterface {
     saveNote = async (content: string) => {
         let result: Error | undefined = undefined;
         debug('save', content);
-        let cmd = `http://localhost:3000/note/create`;
+        let cmd = `${config.notesServer}/note/create`;
+
         const headers = this.getHeaders();
         const body = new URLSearchParams();
         body.append('content', encodeURIComponent(content));
@@ -132,7 +134,7 @@ export class NetworkServerInterface implements ServerInterface {
         }
 
         debug('search', searchTerm);
-        let cmd = `http://localhost:3000/note/search/${encodeURIComponent(searchTerm)}`;
+        let cmd = `${config.notesServer}/note/search/${encodeURIComponent(searchTerm)}`;
         const headers = this.getHeaders();
         let resp = await fetch(cmd, { headers })
             .catch(displayError);
@@ -147,7 +149,7 @@ export class NetworkServerInterface implements ServerInterface {
             debug('results', body);
             let notes = await Promise.all(
                 body.map(async ss => {
-                    const cmd = `http://localhost:3000/note/get/${ss.Id}`;
+                    const cmd = `${config.notesServer}/note/get/${ss.Id}`;
                     const resp = await fetch(cmd, { headers })
                         .catch(displayError);
                     if (resp?.status === 200) {
@@ -185,7 +187,7 @@ export class NetworkServerInterface implements ServerInterface {
     }
 
     loadAuthor = async (id: string) => {
-        const cmd = `http://localhost:3000/user/get/${id}`;
+        const cmd = `${config.notesServer}/user/get/${id}`;
         const headers = this.getHeaders();
         debug('loadAuthor', cmd);
         const resp = await fetch(cmd, { headers });
