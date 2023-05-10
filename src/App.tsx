@@ -11,12 +11,12 @@ import { DemoServerInterface } from './controller/DemoServerInterface';
 import { NetworkServerInterface } from './controller/NetworkServerInterface';
 import { SearchColumn } from './model/searchWorkspace';
 import { EditNoteDiv } from './components/EditNote';
+import { config } from './config';
 
 const debug = Debug('yellow-app');
 
-const demo = false;
 
-const noteController = demo ?
+const noteController = config.demo ?
   new DemoServerInterface() :
   new NetworkServerInterface();
 
