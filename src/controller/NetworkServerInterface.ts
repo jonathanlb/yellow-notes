@@ -1,11 +1,12 @@
 import Debug from 'debug';
 import { Subject } from 'rxjs';
-import { newAuthor, newNote } from '../model/notes';
+import { newAuthor, newNote, Note } from '../model/notes';
 import { orderNotesByDate, orderNotesByScore, SearchColumn, SearchWorkSpaceModel } from '../model/searchWorkspace';
 import { ServerInterface } from './ServerInterface';
 import { config } from '../config';
 
 const debug = Debug('yellow-controller-network');
+const NUM_RECENT_NOTES = 6;
 
 type SearchScore = {
     Id: string,
@@ -34,10 +35,76 @@ export class NetworkServerInterface implements ServerInterface {
         this.loggedInSub = new Subject<boolean>();
     }
 
+    createDefaultView = async () => {
+        this.addSpace('Recent notes');
+
+        const displayError = (e: any) => {
+            debug('search error', e);
+            const errorNote = createErrorNote(
+                e, 'Search Error\n\n**Failed to retrieve recent notes:**');
+            this.noteState.addNote(errorNote, 0);
+        }
+
+        const cmd = `${config.notesServer}/note/recent/${NUM_RECENT_NOTES}`;
+        debug(cmd);
+        const headers = this.getHeaders();
+        const resp = await fetch(cmd, { headers })
+            .catch(displayError);
+
+        if (resp?.status !== 200) {
+            debug('recent-non200', resp);
+            displayError({
+                message: `status: ${resp?.status} (${resp?.statusText}) type: ${resp?.type || '?'}`
+            });
+            return;
+        }
+
+        const body = await resp.json() as Array<string>;
+        debug('recent-results', body);
+        const ss = body.map(id => { return { Id: id, Score: 1 } });
+        const notes = await this.getNotes(ss, displayError);
+        await Promise.all(
+            notes.map(async (obj: any) => {
+                const note = await this.prepareNote(obj);
+                this.noteState.addNote(note, 0);
+            }));
+        this.updateSubscribers();
+    }
+
     getHeaders = () => {
         return {
             Authorization: `Bearer ${this.token}`
         };
+    }
+
+    /**
+     * Retrieve the note contents from the server.
+     * 
+     * @param noteIds the noteId and searchScore tuples.
+     * @param displayError the function to invoke upon error
+     * @returns an array of note objects
+     */
+    getNotes = async (
+        noteIds: Array<SearchScore>, displayError: (e: any) => void
+    ): Promise<Array<any>> => {
+        const headers = this.getHeaders();
+        const notes = await Promise.all(noteIds.map(async ss => {
+            const cmd = `${config.notesServer}/note/get/${ss.Id}`;
+            const resp = await fetch(cmd, { headers })
+                .catch(displayError);
+            if (resp?.status === 200) {
+                const obj: any = await resp.json();
+                obj.Id = ss.Id.toString();
+                obj.Score = ss.Score.toFixed(2);
+                return obj;
+            } else {
+                displayError({
+                    message: `cannot find id=${ss.Id} status: ${resp?.status} (${resp?.statusText}) type: ${resp?.type || '?'}`
+                });
+            }
+        }));
+        debug('notes', notes);
+        return Promise.resolve(notes.filter(x => x !== undefined));
     }
 
     login = async (username: string, password: string) => {
@@ -64,8 +131,10 @@ export class NetworkServerInterface implements ServerInterface {
         if (!this.token) {
             // XXX TODO: clear credentials, display error
             this.loggedInSub.next(false);
+        } else {
+            this.loggedInSub.next(true);
+            this.createDefaultView();
         }
-        this.loggedInSub.next(true);
     }
 
     logout = () => {
@@ -98,6 +167,21 @@ export class NetworkServerInterface implements ServerInterface {
     orderNotesByScore = (spaceIndex: number) => {
         orderNotesByScore(this.noteState.columns[spaceIndex]);
         this.updateSubscribers();
+    }
+
+    prepareNote = async (obj: any): Promise<Note> => {
+        let author = this.noteState.getAuthor(obj.Author);
+        if (!author) {
+            author = await this.loadAuthor(obj.Author);
+            this.noteState.addAuthor(author);
+        }
+        return newNote({
+            author: author,
+            content: obj.Content,
+            creationS: obj.Created,
+            id: obj.Id,
+            score: obj.Score
+        });
     }
 
     reorderNote = (
@@ -140,46 +224,18 @@ export class NetworkServerInterface implements ServerInterface {
             .catch(displayError);
 
         if (resp?.status !== 200) {
-            debug('non200', resp);
+            debug('search-non200', resp);
             displayError({
                 message: `status: ${resp?.status} (${resp?.statusText}) type: ${resp?.type || '?'}`
             });
         } else {
             const body = await resp.json() as Array<SearchScore>;
-            debug('results', body);
-            let notes = await Promise.all(
-                body.map(async ss => {
-                    const cmd = `${config.notesServer}/note/get/${ss.Id}`;
-                    const resp = await fetch(cmd, { headers })
-                        .catch(displayError);
-                    if (resp?.status === 200) {
-                        const obj: any = await resp.json();
-                        obj.Id = ss.Id;
-                        obj.Score = ss.Score.toFixed(2);
-                        return obj;
-                    } else {
-                        displayError({
-                            message: `cannot find id=${ss.Id} status: ${resp?.status} (${resp?.statusText}) type: ${resp?.type || '?'}`
-                        });
-                    }
-                }));
-            debug('notes', notes);
-            notes = notes.filter(x => x !== undefined);
+            debug('search-results', body);
+            let notes = await this.getNotes(body, displayError);
 
             await Promise.all( // wait for all note renders to complete to update
                 notes.map(async (obj: any) => {
-                    let author = this.noteState.getAuthor(obj.Author);
-                    if (!author) {
-                        author = await this.loadAuthor(obj.Author);
-                        this.noteState.addAuthor(author);
-                    }
-                    const note = newNote({
-                        author: author,
-                        content: obj.Content,
-                        creationS: obj.Created,
-                        id: obj.Id,
-                        score: obj.Score
-                    });
+                    const note = await this.prepareNote(obj);
                     this.noteState.addNote(note, spaceIndex);
                 }));
         }
