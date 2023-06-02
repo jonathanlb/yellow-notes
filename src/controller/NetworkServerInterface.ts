@@ -7,6 +7,7 @@ import { config } from '../config';
 
 const debug = Debug('yellow-controller-network');
 const NUM_RECENT_NOTES = 6;
+const RECENT_TITLE = 'Recent notes';
 
 type SearchScore = {
     Id: string,
@@ -36,7 +37,7 @@ export class NetworkServerInterface implements ServerInterface {
     }
 
     createDefaultView = async () => {
-        this.addSpace('Recent notes');
+        this.addSpace(RECENT_TITLE);
 
         const displayError = (e: any) => {
             debug('search error', e);
@@ -88,7 +89,7 @@ export class NetworkServerInterface implements ServerInterface {
         noteIds: Array<SearchScore>, displayError: (e: any) => void
     ): Promise<Array<any>> => {
         const headers = this.getHeaders();
-        const notes = await Promise.all(noteIds.map(async ss => {
+        const notes = await Promise.all((noteIds || []).map(async ss => {
             const cmd = `${config.notesServer}/note/get/${ss.Id}`;
             const resp = await fetch(cmd, { headers })
                 .catch(displayError);
@@ -142,6 +143,24 @@ export class NetworkServerInterface implements ServerInterface {
         this.noteState = new SearchWorkSpaceModel();
         this.columnsSub.next([]);
         this.loggedInSub.next(false);
+    }
+
+    addNewNote = (id: string, content: string) => {
+        const note = newNote({
+            author: newAuthor({ // XXX dummy author
+                id: '0', name: 'me'
+            }),
+            content: content,
+            creationS: new Date().getTime() / 1000,
+            id: id,
+            score: 1
+        });
+        let spaceIdx = this.noteState.getSpaceIndexByTitle(RECENT_TITLE);
+        if (spaceIdx < 0) {
+            this.addSpace(RECENT_TITLE);
+            spaceIdx = 0;
+        }
+        this.noteState.addNote(note, spaceIdx);
     }
 
     addSpace = (spaceTitle: string) => {
@@ -203,6 +222,7 @@ export class NetworkServerInterface implements ServerInterface {
         let resp = await fetch(cmd, { method: 'POST', headers, body })
             .catch(e => { result = e; });
         if (resp?.status === 200) {
+            this.addNewNote(await resp?.text() || (-1 * Math.random()).toString(), content);
             return;
         } else {
             return result || new Error(`${resp?.status} ${resp?.statusText}`);

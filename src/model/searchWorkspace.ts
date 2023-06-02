@@ -69,6 +69,11 @@ export class SearchWorkSpaceModel {
     return this.authors.get(id);
   }
 
+  getSpaceIndexByTitle(title: string): number {
+    const titleLc = title.toLowerCase();
+    return this.columns.findIndex(
+      c => c.title.toLowerCase() === titleLc);
+  }
   reorderNote(
     srcSpace: number, srcIndex: number,
     destSpace: number, destIdx: number) {
