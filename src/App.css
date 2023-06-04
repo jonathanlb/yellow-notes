@@ -11,7 +11,28 @@
   float: right;
 }
 
+.NewSearchAutocomplete {
+  width: 30em;
+}
+
+.NewSearchInput {
+  width: 30em;
+}
+
 .NewSearchInputDiv {
+  width: 30em;
+  margin-right: 2%;
+  margin-left: 2%;
+  background-color: white;
+  border-radius: 5%;
+}
+
+.NewSpaceInput {
+  width: 10em;
+}
+
+.NewSpaceInputDiv {
+  width: 10em;
   margin-right: 2%;
   margin-left: 2%;
   background-color: white;
@@ -20,6 +41,7 @@
 
 .SearchDiv {
   display: flex;
+  flex-wrap: wrap;
   padding: 2%;
   width: 95%;
   background-color: #aa00ff;

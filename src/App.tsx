@@ -1,6 +1,6 @@
 import { Search, Topic } from '@mui/icons-material';
 import { Create, Logout } from '@mui/icons-material';
-import { Box, Button, Paper, TextField, Tooltip } from '@mui/material';
+import { Autocomplete, Box, Button, Paper, TextField, Tooltip } from '@mui/material';
 import Debug from 'debug';
 import { useEffect, useState } from 'react';
 import { DragDropContext, DropResult, ResponderProvided } from 'react-beautiful-dnd';
@@ -14,7 +14,7 @@ import { EditNoteDiv } from './components/EditNote';
 import { config } from './config';
 
 const debug = Debug('yellow-app');
-
+const MAX_SEARCH_HISTORY = 10;
 
 const noteController = config.demo ?
   new DemoServerInterface() :
@@ -24,6 +24,7 @@ function App() {
   const [columns, setColumns] = useState([] as Array<SearchColumn>);
   const [isEditing, setIsEditing] = useState(false);
   const [loggedIn, setLoggedIn] = useState(false);
+  const [recentSearches, setRecentSearches] = useState((localStorage.recentSearches || []) as Array<string>);
 
   useEffect(() => {
     const subs = [
@@ -37,6 +38,14 @@ function App() {
   const newSearch = (e: React.KeyboardEvent<HTMLDivElement>) => {
     if (e.code === 'Enter') {
       const searchTerm = (e.target as any)?.value?.toString()?.trim();
+      if (recentSearches.findIndex(x => x === searchTerm) < 0) {
+        recentSearches.push(searchTerm);
+        if (recentSearches.length > MAX_SEARCH_HISTORY) {
+          recentSearches.shift();
+        }
+        setRecentSearches(recentSearches);
+        localStorage.recentSearches = recentSearches;
+      }
       noteController.addSpace(searchTerm);
       noteController.search(searchTerm, 0);
     }
@@ -65,7 +74,7 @@ function App() {
 
   if (!loggedIn) {
     return (
-      <LoginDiv login={noteController.login}/>
+      <LoginDiv login={noteController.login} />
     );
   }
 
@@ -74,15 +83,22 @@ function App() {
       <Box className='SearchDiv'>
         <Box className='NewSearchInputDiv'>
           <Tooltip title='New Search'>
-            <TextField className='NewSearchInput'
-              label={<Search />}
-              onKeyUp={newSearch} />
+            <Autocomplete
+              className='NewSearchAutocomplete'
+              options={recentSearches}
+              renderInput={(params) =>
+                <TextField {...params}
+                  className='NewSearchInput'
+                  label={<Search />}
+                  onKeyUp={newSearch}
+                />}
+            />
           </Tooltip>
         </Box>
 
-        <Box className='NewSearchInputDiv'>
+        <Box className='NewSpaceInputDiv'>
           <Tooltip title='New Space'>
-            <TextField className='NewSearchInput'
+            <TextField className='NewSpaceInput'
               label={<Topic />}
               onKeyUp={newSpace} />
           </Tooltip>
@@ -90,43 +106,43 @@ function App() {
 
         <Tooltip title='New Note'>
           <Button
-            onClick={e=>setIsEditing(true)}>
-            <Create/>
+            onClick={e => setIsEditing(true)}>
+            <Create />
           </Button>
         </Tooltip>
 
         <Tooltip title='Logout'>
           <Button className='LogoutButton'
-            onClick={e=>noteController.logout()}>
-            <Logout/>
+            onClick={e => noteController.logout()}>
+            <Logout />
           </Button>
         </Tooltip>
       </Box>
 
-      { isEditing ?
+      {isEditing ?
         <EditNoteDiv
-          cancel={()=>setIsEditing(false)}
+          cancel={() => setIsEditing(false)}
           save={noteController.saveNote}
-          /> :
-          undefined
+        /> :
+        undefined
       }
 
       <Box className="SearchPanesDiv">
-      <DragDropContext onDragEnd={onDragEnd}>
-        {
-          columns.map((c, i) => {
-            debug('render', i);
-            return SearchColumnDiv(
-              newSearchColumnProps(
-                c, i,
-                () => noteController.deleteSpace(i),
-                (n) => noteController.deleteNote(i, n),
-                () => noteController.orderNotesByDate(i),
-                () => noteController.orderNotesByScore(i),
-              ));
-          })
-        }
-      </DragDropContext>
+        <DragDropContext onDragEnd={onDragEnd}>
+          {
+            columns.map((c, i) => {
+              debug('render', i);
+              return SearchColumnDiv(
+                newSearchColumnProps(
+                  c, i,
+                  () => noteController.deleteSpace(i),
+                  (n) => noteController.deleteNote(i, n),
+                  () => noteController.orderNotesByDate(i),
+                  () => noteController.orderNotesByScore(i),
+                ));
+            })
+          }
+        </DragDropContext>
       </Box>
     </Paper>
   );
