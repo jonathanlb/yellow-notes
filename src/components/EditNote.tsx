@@ -47,7 +47,7 @@ export function EditNoteDiv(props: EditNoteProps) {
                     New note...
                 </Typography>
                 <Tooltip title='Paste from clipboard'>
-                    <ContentPaste 
+                    <ContentPaste
                         onClick={paste} />
                 </Tooltip>
                 <Tooltip title='Save'>

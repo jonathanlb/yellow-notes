@@ -29,3 +29,9 @@
   font-weight: bolder;
   padding-right: 2%;
 }
+
+.RhsHeaderButtonBox {
+  float: right;
+  margin-left: auto;
+  margin-right: 0;
+}

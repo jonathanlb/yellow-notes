@@ -1,12 +1,13 @@
 import Debug from 'debug';
 import { Subject } from 'rxjs';
-import { newAuthor, newNote, Note } from '../model/notes';
+import { Author, DEFAULT_ACCESS, newAuthor, newNote, Note, PRIVATE_ACCESS } from '../model/notes';
 import { orderNotesByDate, orderNotesByScore, SearchColumn, SearchWorkSpaceModel } from '../model/searchWorkspace';
 import { ServerInterface } from './ServerInterface';
 import { config } from '../config';
 
 const debug = Debug('yellow-controller-network');
 const NUM_RECENT_NOTES = 6;
+const ERRORS_TITLE = 'Errors';
 const RECENT_TITLE = 'Recent notes';
 
 type SearchScore = {
@@ -20,15 +21,18 @@ export function createErrorNote(e: any, title: string) {
         author: newAuthor({ id: '', name: 'Notes Server' }),
         content: errorContent,
         creationS: new Date().getTime() / 1000,
-        id: '-1', // assignment to '' causes rbdnd to freeze note...
+        id: (new Date().getTime()*-1).toString(), // assignment to '' causes rbdnd to freeze note...
+        privacy: PRIVATE_ACCESS
     });
 
 }
 export class NetworkServerInterface implements ServerInterface {
+    author?: Author;
     noteState: SearchWorkSpaceModel;
     columnsSub: Subject<Array<SearchColumn>>;
     loggedInSub: Subject<boolean>;
     token?: string;
+    userId?: number;
 
     constructor() {
         this.noteState = new SearchWorkSpaceModel();
@@ -55,7 +59,7 @@ export class NetworkServerInterface implements ServerInterface {
         if (resp?.status !== 200) {
             debug('recent-non200', resp);
             displayError({
-                message: `status: ${resp?.status} (${resp?.statusText}) type: ${resp?.type || '?'}`
+                message: `status: ${resp?.status} (${resp?.statusText})`
             });
             return;
         }
@@ -80,7 +84,7 @@ export class NetworkServerInterface implements ServerInterface {
 
     /**
      * Retrieve the note contents from the server.
-     * 
+     *
      * @param noteIds the noteId and searchScore tuples.
      * @param displayError the function to invoke upon error
      * @returns an array of note objects
@@ -100,7 +104,7 @@ export class NetworkServerInterface implements ServerInterface {
                 return obj;
             } else {
                 displayError({
-                    message: `cannot find id=${ss.Id} status: ${resp?.status} (${resp?.statusText}) type: ${resp?.type || '?'}`
+                    message: `cannot find id=${ss.Id} status: ${resp?.status} (${resp?.statusText})`
                 });
             }
         }));
@@ -128,6 +132,7 @@ export class NetworkServerInterface implements ServerInterface {
 
         const body = await resp.json();
         this.token = body.token;
+        this.userId = body.id;
 
         if (!this.token) {
             // XXX TODO: clear credentials, display error
@@ -135,11 +140,13 @@ export class NetworkServerInterface implements ServerInterface {
         } else {
             this.loggedInSub.next(true);
             this.createDefaultView();
+            this.author = await this.loadAuthor((this.userId || 0).toString());
         }
     }
 
     logout = () => {
         this.token = undefined;
+        this.userId = undefined;
         this.noteState = new SearchWorkSpaceModel();
         this.columnsSub.next([]);
         this.loggedInSub.next(false);
@@ -147,13 +154,12 @@ export class NetworkServerInterface implements ServerInterface {
 
     addNewNote = (id: string, content: string) => {
         const note = newNote({
-            author: newAuthor({ // XXX dummy author
-                id: '0', name: 'me'
-            }),
+            author: this.author || newAuthor({ id: '0', name: 'me' }),
             content: content,
             creationS: new Date().getTime() / 1000,
             id: id,
-            score: 1
+            score: 1,
+            privacy: DEFAULT_ACCESS
         });
         let spaceIdx = this.noteState.getSpaceIndexByTitle(RECENT_TITLE);
         if (spaceIdx < 0) {
@@ -163,6 +169,12 @@ export class NetworkServerInterface implements ServerInterface {
         this.noteState.addNote(note, spaceIdx);
     }
 
+    /**
+     * Add a message space.  It's critical here to call updateSubscribers to ensure
+     * react/MUI/DND is in a valid state before adding notes to the space.
+     *
+     * @param spaceTitle
+     */
     addSpace = (spaceTitle: string) => {
         this.noteState.addSpace(spaceTitle);
         this.updateSubscribers();
@@ -199,6 +211,7 @@ export class NetworkServerInterface implements ServerInterface {
             content: obj.Content,
             creationS: obj.Created,
             id: obj.Id,
+            privacy: obj.Privacy,
             score: obj.Score
         });
     }
@@ -229,6 +242,32 @@ export class NetworkServerInterface implements ServerInterface {
         }
     }
 
+    setNotePrivacy = async (noteId: string, privacy: number) => {
+        const displayError = (e: any) => {
+            debug('search error', e);
+            const errorNote = createErrorNote(
+                e, 'Update Privacy Error:');
+            let spaceIdx = this.noteState.getSpaceIndexByTitle(ERRORS_TITLE);
+            if (spaceIdx < 0) {
+                this.addSpace(ERRORS_TITLE);
+                spaceIdx = 0;
+            }
+            this.noteState.addNote(errorNote, spaceIdx);
+        }
+
+        const headers = this.getHeaders();
+        const cmd = `${config.notesServer}/note/privacy/${noteId}/${privacy}`;
+        const resp = await fetch(cmd, { headers })
+            .catch(displayError);
+
+        if (resp?.status !== 200) {
+            debug('privacy-non200', resp);
+            displayError({
+                message: `status: ${resp?.status} (${resp?.statusText})`
+            });
+        }
+    }
+
     search = async (searchTerm: string, spaceIndex: number) => {
         const displayError = (e: any) => {
             debug('search error', e);
@@ -246,7 +285,7 @@ export class NetworkServerInterface implements ServerInterface {
         if (resp?.status !== 200) {
             debug('search-non200', resp);
             displayError({
-                message: `status: ${resp?.status} (${resp?.statusText}) type: ${resp?.type || '?'}`
+                message: `status: ${resp?.status} (${resp?.statusText})`
             });
         } else {
             const body = await resp.json() as Array<SearchScore>;

@@ -9,9 +9,15 @@ import './SearchColumn.css';
 
 const debug = Debug('yellow-SearchColumn');
 
+export interface NotePrivacy {
+  noteId: number,
+  privacy: number
+}
+
 export interface SearchColumnProps extends SearchColumn {
   closeNote: (noteIdx: number) => void;
   closeSearchCol: () => void;
+  setNotePrivacy: (id: string, privacy: number) => void,
   sortByDate: () => void;
   sortByScore: () => void;
   id: string;
@@ -23,12 +29,14 @@ export function newSearchColumnProps(
   index: number,
   closeSearchCol: () => void,
   closeNote: (noteIdx: number) => void,
+  setNotePrivacy: (id: string, privacy: number) => void,
   sortByDate: () => void,
   sortByScore: () => void):
   SearchColumnProps {
   return {
     closeNote: closeNote,
     closeSearchCol: closeSearchCol,
+    setNotePrivacy: setNotePrivacy,
     sortByDate: sortByDate,
     sortByScore: sortByScore,
     id: index.toString(),
@@ -42,12 +50,23 @@ export function newSearchColumnProps(
 export function SearchColumnDiv(props: SearchColumnProps) {
   debug('render', props);
 
-  const createNoteProps = (note: Note, colIdx: number, noteIdx: number) => {
+  const createNoteProps = (
+    note: Note,
+    colIdx: number,
+    noteIdx: number,
+    ) => {
     debug('creating-note-from', props);
     debug('build-note', note, colIdx, noteIdx);
+
+    const noteSetPrivacy = (p: number) => {
+      props.setNotePrivacy(note.id(), p);
+    }
+
     return newNoteProps(
-      note, noteIdx,
-      () => props.closeNote(noteIdx));
+      note,
+      noteIdx,
+      () => props.closeNote(noteIdx),
+      noteSetPrivacy);
   }
 
   return (

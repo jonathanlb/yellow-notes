@@ -1,6 +1,6 @@
 import Debug from 'debug';
 import { Subject } from 'rxjs';
-import { Author, newAuthor, newNote } from '../model/notes';
+import { Author, DEFAULT_ACCESS, newAuthor, newNote } from '../model/notes';
 import { orderNotesByDate, orderNotesByScore, SearchColumn, SearchWorkSpaceModel } from '../model/searchWorkspace';
 import { ServerInterface } from './ServerInterface';
 
@@ -26,6 +26,7 @@ export class DemoServerInterface implements ServerInterface {
                 author: this.noteState.getAuthor('1') as Author,
                 content: '- Do something new\n- It\'s \u03C0 Day',
                 creationS: 1678808892,
+                privacy: DEFAULT_ACCESS,
                 id: '11'
             }),
             0);
@@ -34,6 +35,7 @@ export class DemoServerInterface implements ServerInterface {
                 author: this.noteState.getAuthor('1') as Author,
                 content: '💩',
                 creationS: 1678809892,
+                privacy: DEFAULT_ACCESS,
                 id: '12'
             }),
             0);
@@ -80,9 +82,14 @@ export class DemoServerInterface implements ServerInterface {
                 author: this.noteState.getAuthor('1') as Author,
                 content: content,
                 creationS: new Date().getTime(),
+                privacy: DEFAULT_ACCESS,
                 id: (this.dummyNoteId++).toString()
             }),
             0);
+    }
+
+    setNotePrivacy = (_noteId: string, _privacy: number) => {
+        // dummy
     }
 
     search = (searchTerm: string, spaceIndex: number) => {
@@ -91,6 +98,7 @@ export class DemoServerInterface implements ServerInterface {
                 author: this.noteState.getAuthor('1') as Author,
                 content: searchTerm,
                 creationS: new Date().getTime(),
+                privacy: DEFAULT_ACCESS,
                 id: (this.dummyNoteId++).toString()
             }),
             spaceIndex);

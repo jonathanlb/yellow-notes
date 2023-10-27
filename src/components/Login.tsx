@@ -1,13 +1,13 @@
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
-import Avatar from "@mui/material/Avatar";
-import Box from "@mui/material/Box";
-import Button from "@mui/material/Button";
-import Checkbox from "@mui/material/Checkbox";
-import CssBaseline from "@mui/material/CssBaseline";
-import FormControlLabel from "@mui/material/FormControlLabel";
-import Paper from "@mui/material/Paper";
-import TextField from "@mui/material/TextField";
-import Typography from "@mui/material/Typography";
+import Avatar from '@mui/material/Avatar';
+import Box from '@mui/material/Box';
+import Button from '@mui/material/Button';
+import Checkbox from '@mui/material/Checkbox';
+import CssBaseline from '@mui/material/CssBaseline';
+import FormControlLabel from '@mui/material/FormControlLabel';
+import Paper from '@mui/material/Paper';
+import TextField from '@mui/material/TextField';
+import Typography from '@mui/material/Typography';
 import { useState } from 'react';
 
 export interface LoginProps {
@@ -17,7 +17,7 @@ export interface LoginProps {
 export function LoginDiv(props: LoginProps) {
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
-    
+
     const updatePassword = (e: React.ChangeEvent<HTMLInputElement>) => {
         const p = e.target?.value || '';
         setPassword(p);

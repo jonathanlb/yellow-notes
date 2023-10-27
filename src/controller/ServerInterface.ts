@@ -13,6 +13,7 @@ export interface ServerInterface {
     reorderNote: (spaceSrcId: number, noteSrcId: number,
         spaceDstId: number, noteDstId: number) => void,
     saveNote: (content: string) => Promise<Error|void>,
+    setNotePrivacy: (noteId: string, privacy: number) => void,
     search: (searchTerm: string, spaceIndex: number) => void,
     getSpaces: () => Observable<Array<SearchColumn>>,
     getLoggedIn: () => Observable<Boolean>,

@@ -15,11 +15,18 @@ export function newAuthor(author: AuthorData): Author {
   }
 }
 
+// from go-notes/pkg/notes/notes.go
+export const PRIVATE_ACCESS = 0;
+export const PROTECTED_ACCESS = 1;
+export const PUBLIC_ACCESS = 2;
+export const DEFAULT_ACCESS = PROTECTED_ACCESS;
+
 export type NoteData = {
   author: Author;
   content: string;
   creationS: number;
   id: string;
+  privacy: number;
   score?: number;
 };
 
@@ -28,6 +35,7 @@ export interface Note {
   content: () => string;
   creationS: () => number;
   id: () => string;
+  privacy: number;
   score?: number;
 };
 
@@ -37,6 +45,7 @@ export function newNote(note: NoteData): Note {
     content: () => note.content,
     creationS: () => note.creationS,
     id: () => note.id,
+    privacy: note.privacy,
     score: note.score,
   };
 }

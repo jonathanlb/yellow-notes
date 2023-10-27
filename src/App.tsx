@@ -14,17 +14,29 @@ import { EditNoteDiv } from './components/EditNote';
 import { config } from './config';
 
 const debug = Debug('yellow-app');
+const errors = Debug('yellow-app:error');
 const MAX_SEARCH_HISTORY = 10;
 
 const noteController = config.demo ?
   new DemoServerInterface() :
   new NetworkServerInterface();
 
+function initRecentSearches(): Array<string> {
+  const input = localStorage.recentSearches || '[]';
+  try {
+    return JSON.parse(input);
+  } catch (e) {
+    errors('Cannot parse recent searches', e);
+    localStorage.recentSearches = '[]';
+    return [];
+  }
+}
+
 function App() {
   const [columns, setColumns] = useState([] as Array<SearchColumn>);
   const [isEditing, setIsEditing] = useState(false);
   const [loggedIn, setLoggedIn] = useState(false);
-  const [recentSearches, setRecentSearches] = useState((localStorage.recentSearches || []) as Array<string>);
+  const [recentSearches, setRecentSearches] = useState(initRecentSearches());
 
   useEffect(() => {
     const subs = [
@@ -44,7 +56,7 @@ function App() {
           recentSearches.shift();
         }
         setRecentSearches(recentSearches);
-        localStorage.recentSearches = recentSearches;
+        localStorage.recentSearches = JSON.stringify(recentSearches);
       }
       noteController.addSpace(searchTerm);
       noteController.search(searchTerm, 0);
@@ -84,8 +96,9 @@ function App() {
         <Box className='NewSearchInputDiv'>
           <Tooltip title='New Search'>
             <Autocomplete
+              disablePortal
               className='NewSearchAutocomplete'
-              options={recentSearches}
+              options={recentSearches || []}
               renderInput={(params) =>
                 <TextField {...params}
                   className='NewSearchInput'
@@ -137,6 +150,7 @@ function App() {
                   c, i,
                   () => noteController.deleteSpace(i),
                   (n) => noteController.deleteNote(i, n),
+                  (id, p) => noteController.setNotePrivacy(id, p),
                   () => noteController.orderNotesByDate(i),
                   () => noteController.orderNotesByScore(i),
                 ));
