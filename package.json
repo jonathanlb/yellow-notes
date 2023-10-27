@@ -40,7 +40,10 @@
     ],
     "rules": {
       "no-trailing-spaces": "error",
-      "quotes": ["error", "single"]
+      "quotes": [
+        "error",
+        "single"
+      ]
     }
   },
   "browserslist": {
@@ -56,6 +59,7 @@
     ]
   },
   "devDependencies": {
+    "@babel/plugin-proposal-private-property-in-object": "^7.21.11",
     "@types/turndown": "^5.0.1"
   }
 }
